@@ -6,7 +6,7 @@ categories: [Rev]
 ---
 ## Challenge
 
-![](challenge.png))
+![](challenge.PNG))
 
 ## Writeup
 
