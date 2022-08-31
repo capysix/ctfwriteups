@@ -175,7 +175,7 @@ okay set some breakpoints...
 
 so! lets manually insert our values with the debugger
 
-![](debugger_1.jpg)
+![](debugger_1.png)
 
 - breakpoint after read_io()
 - set return value to 0x40 (since the payload is 64)
@@ -184,7 +184,7 @@ so! lets manually insert our values with the debugger
 - breakpoint before the sus function
 - it looks like the sus function is using values from the original read buffer
 
-![](debugger_2.jpg)
+![](debugger_2.png)
 
 replace original read buffer with our decrypted pcap payload
 
@@ -194,7 +194,7 @@ f00fd275ec75a33df5cf8023afb17d580da71bf9a5a2fbd4dbe625262756c72656e0148add731a61
 
 run
 
-![](debugger_3.jpg)
+![](debugger_3.png)
 owo whats this
 
 so running it with the first traffic data does a shell command that echos a character 'm' to a file called conf
