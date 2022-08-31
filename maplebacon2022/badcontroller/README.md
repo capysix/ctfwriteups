@@ -17,23 +17,23 @@ The challenge, BadController comes with two files:
 
 Opening up challdriver.exe in IDA decompiler, we see several functions and loops
 
-![](challdriver_loop.PNG))
+![](challdriver_loop.png))
 
-![](challdriver_switch.PNG))
+![](challdriver_switch.png))
 
 
 as well as this rather suspicious looking function call at the end
 
-![](challdriver_sus.PNG))
+![](challdriver_sus.png))
 
 
 After some further static reversing:
 
-![](challdriver_switch_labelled.PNG))
+![](challdriver_switch_labelled.png))
 
 - switch statement is probably the controller parsing logic
 
-![](challdriver_loop_labelled.PNG))
+![](challdriver_loop_labelled.png))
 - (note that i didnt do all this reversing myself, credit to mzakocs and dnivra for doing a big part of this)
 
 - sub_1400040B0  - calls WriteFile/IO functions with a Buffer
@@ -47,12 +47,12 @@ After some further static reversing:
 - data is 'encrypted' with the key
 
 - pause reversing, lets take a look at the pcap
-![](wireshark_lots.PNG))
+![](wireshark_lots.png))
 - ah f-
 
 - first things first lets look up how 2 usb
 
-![](usbwiki.PNG))
+![](usbwiki.png))
 
 this mahaloz guy has a wiki
 screenshots suggest he is chinese
@@ -60,8 +60,6 @@ honestly this just talks about keyboards so its useless
 but the keyinsight i got was that you wanna look for interesting data dangling at the end of the packets
 
 Anyway this is a controller, so its probably USB HID
-
-![](wireshark_ips.PNG))
 There are multiple ips - 1.10.1, 1.62.0, 1.1.1
 wtf are all these types
 to the googles
@@ -92,14 +90,14 @@ There's an easy way to check this:
 	- key is always preceeded by 0x727
 	- 07:27 due to endian bullshit
 
-![](wireshark_yiss.PNG))
+![](wireshark_yiss.png))
 
 Awww yisssss
 
 Alright wtf is the decryption doing
 - proceed to spend way too much time getting confused by decompiled code
 - pray to kylebot
-![](kylebot_git_gud.PNG))
+![](kylebot_git_gud.png))
 
 - receive enlightenment
 - its just a fucking in-place xor
@@ -119,11 +117,11 @@ oh wait endianness
 
 is there a 0xf00f an- ahar.
 
-![](header_check_f00f.PNG))
+![](header_check_f00f.png))
 
 alright and is 0x0100 important?
 
-![](header_check_0100.PNG))
+![](header_check_0100.png))
 
 ahar.
 
@@ -212,5 +210,5 @@ so screw it, engage manual override
 - override the buffer at that point with the corresponding payload
 - run
 - ???
-![](success.PNG))
+![](success.png))
 - :bread: we got the flag
