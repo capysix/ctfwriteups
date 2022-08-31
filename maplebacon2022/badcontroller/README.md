@@ -6,7 +6,7 @@ categories: [Rev]
 ---
 ## Challenge
 
-![](challenge.PNG)
+![](challenge.png)
 
 ## Writeup
 
@@ -29,42 +29,40 @@ as well as this rather suspicious looking function call at the end
 
 After some further static reversing:
 
-![](challdriver_switch_labelled.png)
+![](challdriver_switch_labeled.png)
+switch statement is probably the controller parsing logic
 
-- switch statement is probably the controller parsing logic
+![](challdriver_loop_labeled.png)
+(note that i didnt do all this reversing myself, credit to mzakocs and dnivra for doing a big part of this)
 
-![](challdriver_loop_labelled.png)
-- (note that i didnt do all this reversing myself, credit to mzakocs and dnivra for doing a big part of this)
-
+Observations:
 - sub_1400040B0  - calls WriteFile/IO functions with a Buffer
 - sub_140003EB0  - calls ReadFile/IO functions with a Buffer
 - tentatively labelled write_io and read_io respectively
 - the rand() portion looks a lot like some sort of key/hash?
-- tracing shows that its first sent out by write_io() then 
-  xor'd with the buffer returned by read_io()
+- tracing shows that its first sent out by write_io() then xor'd with the buffer returned by read_io()
 
-- assumption: this is code for parsing the USB data from the controller
-- data is 'encrypted' with the key
+Assumption: this is code for parsing the USB data from the controller, which data is 'encrypted' with the key
 
-- pause reversing, lets take a look at the pcap
+pause reversing, lets take a look at the pcap
 ![](wireshark_lots.png)
-- ah f-
+ah f-  
 
-- first things first lets look up how 2 usb
+first things first lets look up how 2 usb
 
 ![](usbwiki.png)
 
-this mahaloz guy has a wiki
-screenshots suggest he is chinese
-honestly this just talks about keyboards so its useless
-but the keyinsight i got was that you wanna look for interesting data dangling at the end of the packets
+this mahaloz guy has a wiki. honestly this just talks about keyboards ~~so its useless~~.
+
+BUT a key insight i got was that you want to look for interesting data dangling at the end of the packets. Wooo~
 
 Anyway this is a controller, so its probably USB HID
-There are multiple ips - 1.10.1, 1.62.0, 1.1.1
-wtf are all these types
-to the googles
+- There are multiple ips - 1.10.1, 1.62.0, 1.1.1
+- wtf are all these types
+- to the googles
 
 Google each of the "USB INFO" types
+
 Eventually zero in on the network traffic between host and 1.62.0
 - honestly i don't fully recall how i decided this was the interesting traffic
 - rough reasoning I recall:
@@ -79,31 +77,30 @@ Eventually zero in on the network traffic between host and 1.62.0
 
 ![](i_have_no_idea_dog.jpg)
 
-So at this point i had like, a theoratical model of how things might be working
-- driver makes a key
-- sends key to device via SET_REPORT Request
-- device encrypts traffic with key key and replies via URB_INTERRUPT
-- driver reads the interrupt, decrypts the data and does switch case voodoo on it
+So at this point i had like, a theoretical model of how things might be working
+1. driver makes a key
+2. sends key to device via SET_REPORT Request
+3. device encrypts traffic with key key and replies via URB_INTERRUPT
+4. driver reads the interrupt, decrypts the data and does switch case voodoo on it
 
 There's an easy way to check this:
-	- the driver sends the key in the clear
-	- key is always preceeded by 0x727
-	- 07:27 due to endian bullshit
+- the driver sends the key in the clear
+- key is always preceeded by 0x727 (07:27 due to endian bullshit)
+- lets just look into the pcaps for frames with 07:27
 
 ![](wireshark_yiss.png)
 
-Awww yisssss
+*Awww yisssss*
 
 Alright wtf is the decryption doing
 - proceed to spend way too much time getting confused by decompiled code
 - pray to kylebot
 ![](kylebot_git_gud.png)
-
 - receive enlightenment
-- its just a fucking in-place xor
-- gdi
+- its just a bloody in-place xor
+- **gdi**
 
-Okay lets check this with the first 'pair' of write/read
+Okay lets check this manually with the first 'pair' of write/read
 - key is 21:24:1b:6e
 - first part of the URB_INTERRUPT leftover cap data is 2e:d4:1b:6f
 - xor that shit
@@ -115,7 +112,7 @@ mmmm
 
 oh wait endianness
 
-is there a 0xf00f an- ahar.
+is there a 0xf00f- ahar!
 
 ![](header_check_f00f.png)
 
@@ -123,25 +120,26 @@ alright and is 0x0100 important?
 
 ![](header_check_0100.png)
 
-ahar.
+*ahar*
 
-okay so we're onto something. now i guess i just need to write a script for this.
-
-*sigh*
+okay so we're onto something. now i guess i just need to write a script for this. This should be relatively straightf-
 
 ![](threehourslater.jpg)
-- script is written in python3 with pyshark
 
-okay run the script and we have all the cool traffic! wooooo~
+...we have a python3 script (turns out scapy doesn't support USB protocols. Boooo. All hail pyshark)
+
+okay run the script and we have all the cool traffic! wooooo!!!!
+
+...
+
+right.
 
 now what.
 
-uhh.
-
-okay so if the first 2 bytes are 0xf00f it does what looks like controller logic
+uh. okay so if the first 2 bytes are 0xf00f it does what looks like controller logic.
 if the bytes are 0x0ff0 however it does that sus function (thanks to mzakocs for looking at this)
 
-so i think the goal is to see what the sus function does by somehow replaying this pcap in
+so i think the goal is to see what the sus function does by somehow replaying this pcap in a debugger with the challdriver.exe binary
 
 problem: we can't run the program
 solution: cry
@@ -150,19 +148,21 @@ wait no apparently mzakocs and dnivra were looking into that
 
 so it turns out you cant run the program because SetupDiEnumDeviceInterfaces thats called
 at the start of the program fails and terminates
-solution: patch it out!
 
+solution: patch it out!
 ![](just_patch_out.jpg)
 
 now we can run it in x64dbg
 
-except not really
+except not really (program closes immediately)
 
-okay set some breakpoints
+okay set some breakpoints...
 
-okay so it tries to read shit and fails because theres nothing there
-so lets manually insert our values
+\<reversing_intensifies.meme\>
 
+...anyway turns out read_io() tries to read stuff from a FileHandle of sorts and fails because theres nothing there
+
+so! lets manually insert our values with the debugger
 ![](debugger_1.jpg)
 - breakpoint after read_io()
 - set return value to 0x40 (since the payload is 64)
