@@ -186,16 +186,17 @@ so! lets manually insert our values with the debugger
 
 ![](debugger_2.png)
 
-replace original read buffer with our decrypted pcap payload
+- replace original read buffer with our decrypted pcap payload
 
 ```
 f00fd275ec75a33df5cf8023afb17d580da71bf9a5a2fbd4dbe625262756c72656e0148add731a611ed98dac9358c29e4d0d1d1b634209d724bcf901082576be
 ```
 
-run
+- run
 
 ![](debugger_3.png)
-owo whats this
+
+- owo whats this
 
 so running it with the first traffic data does a shell command that echos a character 'm' to a file called conf
 
