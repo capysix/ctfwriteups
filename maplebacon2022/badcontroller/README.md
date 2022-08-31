@@ -169,7 +169,7 @@ except not really (program closes immediately)
 
 okay set some breakpoints...
 
-**\<reversing_intensifies.meme\>**
+![](fish_reversing.jpg)
 
 ...anyway turns out read_io() tries to read stuff from a FileHandle of sorts and fails because theres nothing there
 
