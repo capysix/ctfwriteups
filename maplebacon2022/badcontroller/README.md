@@ -6,7 +6,7 @@ categories: [Rev]
 ---
 ## Challenge
 
-![](challenge.PNG))
+![](challenge.PNG)
 
 ## Writeup
 
@@ -17,23 +17,23 @@ The challenge, BadController comes with two files:
 
 Opening up challdriver.exe in IDA decompiler, we see several functions and loops
 
-![](challdriver_loop.png))
+![](challdriver_loop.png)
 
-![](challdriver_switch.png))
+![](challdriver_switch.png)
 
 
 as well as this rather suspicious looking function call at the end
 
-![](challdriver_sus.png))
+![](challdriver_sus.png)
 
 
 After some further static reversing:
 
-![](challdriver_switch_labelled.png))
+![](challdriver_switch_labelled.png)
 
 - switch statement is probably the controller parsing logic
 
-![](challdriver_loop_labelled.png))
+![](challdriver_loop_labelled.png)
 - (note that i didnt do all this reversing myself, credit to mzakocs and dnivra for doing a big part of this)
 
 - sub_1400040B0  - calls WriteFile/IO functions with a Buffer
@@ -47,12 +47,12 @@ After some further static reversing:
 - data is 'encrypted' with the key
 
 - pause reversing, lets take a look at the pcap
-![](wireshark_lots.png))
+![](wireshark_lots.png)
 - ah f-
 
 - first things first lets look up how 2 usb
 
-![](usbwiki.png))
+![](usbwiki.png)
 
 this mahaloz guy has a wiki
 screenshots suggest he is chinese
@@ -77,7 +77,7 @@ Eventually zero in on the network traffic between host and 1.62.0
 	- oh hay every SET_REPORT Request is followed by several URB_INTERRUPT ins
 	- the first URB_INTERRUPT in has stuff
 
-![](i_have_no_idea_dog.jpg))
+![](i_have_no_idea_dog.jpg)
 
 So at this point i had like, a theoratical model of how things might be working
 - driver makes a key
@@ -90,14 +90,14 @@ There's an easy way to check this:
 	- key is always preceeded by 0x727
 	- 07:27 due to endian bullshit
 
-![](wireshark_yiss.png))
+![](wireshark_yiss.png)
 
 Awww yisssss
 
 Alright wtf is the decryption doing
 - proceed to spend way too much time getting confused by decompiled code
 - pray to kylebot
-![](kylebot_git_gud.png))
+![](kylebot_git_gud.png)
 
 - receive enlightenment
 - its just a fucking in-place xor
@@ -117,11 +117,11 @@ oh wait endianness
 
 is there a 0xf00f an- ahar.
 
-![](header_check_f00f.png))
+![](header_check_f00f.png)
 
 alright and is 0x0100 important?
 
-![](header_check_0100.png))
+![](header_check_0100.png)
 
 ahar.
 
@@ -129,7 +129,7 @@ okay so we're onto something. now i guess i just need to write a script for this
 
 *sigh*
 
-![](threehourslater.jpg))
+![](threehourslater.jpg)
 - script is written in python3 with pyshark
 
 okay run the script and we have all the cool traffic! wooooo~
@@ -152,7 +152,7 @@ so it turns out you cant run the program because SetupDiEnumDeviceInterfaces tha
 at the start of the program fails and terminates
 solution: patch it out!
 
-![](just_patch_out.jpg))
+![](just_patch_out.jpg)
 
 now we can run it in x64dbg
 
@@ -163,21 +163,21 @@ okay set some breakpoints
 okay so it tries to read shit and fails because theres nothing there
 so lets manually insert our values
 
-![](debugger_1.jpg))
+![](debugger_1.jpg)
 - breakpoint after read_io()
 - set return value to 0x40 (since the payload is 64)
 - breakpoint before the part where it checks for 0x0ff0
 - look at where its checking, copy our buffer in
 - breakpoint before the sus function
 - it looks like the sus function is using values from the original read buffer
-![](debugger_2.jpg))
+![](debugger_2.jpg)
 - replace original read buffer with our decrypted pcap payload
 ```
 f00fd275ec75a33df5cf8023afb17d580da71bf9a5a2fbd4dbe625262756c72656e0148add731a611ed98dac9358c29e4d0d1d1b634209d724bcf901082576be
 ```
 - run
 
-![](debugger_3.jpg))
+![](debugger_3.jpg)
 - owo whats this
 
 - so running it with the first traffic data does a shell command that echos a character 'm' to a file called conf
@@ -186,7 +186,7 @@ f00fd275ec75a33df5cf8023afb17d580da71bf9a5a2fbd4dbe625262756c72656e0148add731a61
 - how many packets for f0:0f (cause endianness) are there?
 - to the script!1!!
 
-![](few_hours_later.jpg))
+![](few_hours_later.jpg)
 
 so theres like...34 of these?
 lets try with the next copy of traffic:
@@ -201,7 +201,7 @@ next thing we tried (with dnvira) was to patch it so it could take input from th
 but we couldnt get it to run correctly with the debugger or without
 so screw it, engage manual override
 
-![](manual_override.jpg))
+![](manual_override.jpg)
 
 - patch the return value of read_io() to always return 0x40 
 - patch out the rand() from key generation so it always generates 0x00000000
@@ -210,5 +210,5 @@ so screw it, engage manual override
 - override the buffer at that point with the corresponding payload
 - run
 - ???
-![](success.png))
+![](success.png)
 - :bread: we got the flag
