@@ -235,7 +235,8 @@ so screw it, engage manual override
 3. breakpoint at the return point of read_io()
 4. using the earlier decryption script, generate the buffer values for all 34 packets
 5. override the buffer at that point with the corresponding payload
-6. run
+6. each subsequent run for each of the 34 packets will append another char to the conf file
+7. run x34 (steps 5-6)
 7. ???
 
 ![](success.png)
