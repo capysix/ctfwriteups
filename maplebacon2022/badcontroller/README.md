@@ -144,22 +144,22 @@ okay run the script and we have all the cool traffic! wooooo!!!!
 
 right.
 
-now what.
+*now what.*
 
 uh. okay so if the first 2 bytes are 0xf00f it does what looks like controller logic.
 if the bytes are 0x0ff0 however it does that sus function (thanks to mzakocs for looking at this)
 
 so i think the goal is to see what the sus function does by somehow replaying this pcap in a debugger with the challdriver.exe binary
 
-problem: we can't run the program
-solution: cry
+- **problem:** we can't run the program
+- **solution:** cry
 
 wait no apparently mzakocs and dnivra were looking into that
 
 so it turns out you cant run the program because SetupDiEnumDeviceInterfaces thats called
 at the start of the program fails and terminates
 
-solution: patch it out!
+**solution:** patch it out!
 
 ![](just_patch_out.jpg)
 
@@ -169,7 +169,7 @@ except not really (program closes immediately)
 
 okay set some breakpoints...
 
-\<reversing_intensifies.meme\>
+**\<reversing_intensifies.meme\>**
 
 ...anyway turns out read_io() tries to read stuff from a FileHandle of sorts and fails because theres nothing there
 
