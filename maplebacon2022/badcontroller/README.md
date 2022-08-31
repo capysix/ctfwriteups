@@ -171,6 +171,8 @@ okay set some breakpoints...
 
 ![](fish_reversing.jpg)
 
+<sub>...please dont kill me fish</sub>
+
 ...anyway turns out read_io() tries to read stuff from a FileHandle of sorts and fails because theres nothing there
 
 so! lets manually insert our values with the debugger
